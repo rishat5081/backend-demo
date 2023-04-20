@@ -1,0 +1,36 @@
+version: '3'
+services:
+  node:
+    build: .
+    ports:
+      - 5000:5000
+    environment:
+      MONGO_URI: mongodb://mongo:27017/my-database
+      REDIS_URL: redis://redis:6379
+      REDIS_PORT: 6379
+    depends_on:
+      - mongo
+      - redis
+  mongo:
+    image: mongo
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - 27017:27017
+  redis:
+    image: redis
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+    ports:
+      - 6379:6379
+    volumes:
+      - .db:/data
+    restart: always
+    entrypoint: redis-server --appendonly yes
+  driver:
+    build: .
+    links:
+      - redis
+volumes:
+  mongo-data:
